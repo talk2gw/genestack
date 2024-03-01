@@ -1,0 +1,4 @@
+resources:
+  - postgresql-configmap.yaml
+  - postgresql-centos07.yaml
+  - postgresql-backup.yaml

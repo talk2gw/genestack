@@ -1,0 +1,15 @@
+resources:
+  - ns-postgresql.yaml
+
+helmCharts:
+  - name: postgresql-operator
+    repo: https://dev4devs.github.io/postgresql-operator
+    releaseName: postgresql-operator
+    valuesInline:
+      clusterName: cluster.local
+      webhook:
+        cert:
+          certManager:
+            enabled: true
+    includeCRDs: true
+    namespace: postgresql-system

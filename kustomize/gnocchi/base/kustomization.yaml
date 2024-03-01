@@ -1,0 +1,13 @@
+resources:
+  - gnocchi-postgresql-database.yaml
+  - all.yaml
+  - hpa-gnocchi-api.yaml
+
+patches:
+  - target:
+      kind: PersistentVolumeClaim
+      name: glance-images
+    patch: |-
+      - op: replace
+        path: /spec/accessModes
+        value: ["ReadWriteMany"]

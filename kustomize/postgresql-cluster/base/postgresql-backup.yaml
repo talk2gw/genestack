@@ -1,0 +1,18 @@
+apiVersion: postgresql.dev4devs.com/v1alpha1
+kind: Backup
+metadata:
+  name: postgresql-backup
+  namespace: openstack
+spec:
+  mariaDbRef:
+    name: postgresql
+    namespace: openstack
+  schedule:
+    cron: "0 0 * * *"
+  storage:
+    persistentVolumeClaim:
+      resources:
+        requests:
+          storage: 1Gi
+      accessModes:
+        - ReadWriteOnce

@@ -1,0 +1,14 @@
+bases:
+  - "../base"
+
+patches:
+  - target:
+      kind: postgresql
+      name: postgresql
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/postgresql/enabled
+        value: false
