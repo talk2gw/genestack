@@ -148,12 +148,20 @@ echo "Waiting for the cert-manager to be available"
 kubectl -n cert-manager wait --timeout=5m deployments.apps/cert-manager --for=condition=available
 
 # Deploy the Genestack secrets
-/opt/genestack/bin/create-secrets.sh
+if [ -f /etc/genestack/kubesecrets.yaml ]; then
+  echo "Reusing existing /etc/genestack/kubesecrets.yaml"
+else
+  /opt/genestack/bin/create-secrets.sh
+fi
 if ! kubectl create -f /etc/genestack/kubesecrets.yaml; then
   echo "Secrets already created"
 fi
 
-/opt/genestack/bin/create-skyline-secrets.sh
+if [ -f /etc/genestack/skylinesecrets.yaml ]; then
+  echo "Reusing existing /etc/genestack/skylinesecrets.yaml"
+else
+  /opt/genestack/bin/create-skyline-secrets.sh
+fi
 if ! kubectl create -f /etc/genestack/skylinesecrets.yaml; then
   echo "Skyline secrets already created"
 fi
@@ -198,4 +206,3 @@ kubectl apply -k /etc/genestack/kustomize/ovn/base
 
 # Deploy Redis Sentinel
 /opt/genestack/bin/install-redis-sentinel.sh
-
