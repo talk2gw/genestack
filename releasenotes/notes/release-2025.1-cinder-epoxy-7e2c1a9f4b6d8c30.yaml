@@ -31,6 +31,12 @@ upgrade:
   - |
     Existing environments that use `keystone_authtoken.auth_uri` should plan
     to migrate to `www_authenticate_uri`.
+  - |
+    Breaking change: generated global `endpoints.identity.auth` overrides are
+    no longer applied from hyperconverged common endpoint generation. If your
+    environment depended on that global block (for example custom service auth
+    region/user domain/project domain values), move those settings into
+    service-specific helm overrides before upgrade.
 
 deprecations:
   - |
