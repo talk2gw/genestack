@@ -132,7 +132,33 @@ kubectl apply -f /etc/genestack/manifests/metallb/metallb-namespace.yaml
 /opt/genestack/bin/install-metallb.sh
 echo "Waiting for the metallb-controller to be available"
 kubectl -n metallb-system wait --timeout=5m deployments.apps/metallb-controller --for=condition=available
-kubectl apply -f /etc/genestack/manifests/metallb/metallb-openstack-service-lb.yml
+
+echo "Waiting for the metallb validating webhook service endpoints"
+METALLB_WEBHOOK_MAX_RETRIES=${METALLB_WEBHOOK_MAX_RETRIES:-30}
+METALLB_WEBHOOK_RETRY_DELAY=${METALLB_WEBHOOK_RETRY_DELAY:-5}
+for ((i=1; i<=METALLB_WEBHOOK_MAX_RETRIES; i++)); do
+  if kubectl -n metallb-system get endpoints metallb-webhook-service \
+      -o jsonpath='{.subsets[0].addresses[0].ip}' 2>/dev/null | grep -q .; then
+    break
+  fi
+  if [ "${i}" -eq "${METALLB_WEBHOOK_MAX_RETRIES}" ]; then
+    echo "ERROR: metallb-webhook-service has no ready endpoints after waiting."
+    kubectl -n metallb-system get pods -o wide || true
+    kubectl -n metallb-system get endpoints metallb-webhook-service -o yaml || true
+    exit 1
+  fi
+  sleep "${METALLB_WEBHOOK_RETRY_DELAY}"
+done
+
+apply_metallb_crs() {
+  kubectl apply -f /etc/genestack/manifests/metallb/metallb-openstack-service-lb.yml
+}
+
+if ! apply_metallb_crs; then
+  echo "Metallb webhook race detected; retrying CR apply..."
+  sleep 10
+  apply_metallb_crs
+fi
 
 # Deploy openstack
 kubectl apply -k /etc/genestack/kustomize/openstack/base
